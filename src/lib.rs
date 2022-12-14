@@ -1,3 +1,4 @@
+pub mod tree;
 pub trait Genotype {
     fn fitness(&self) -> f64;
     fn mutate(&mut self);
@@ -83,7 +84,6 @@ where
         }
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

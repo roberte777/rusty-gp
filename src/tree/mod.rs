@@ -66,18 +66,51 @@ impl<C> Node<C> for InternalNode<C> {
         )
     }
 }
-pub struct LeafNode<C> {
+pub struct UnaryNode<C> {
     pub value: fn(context: Option<&C>) -> f64,
 }
-impl<C> LeafNode<C> {
+impl<C> UnaryNode<C> {
     fn new(value: fn(context: Option<&C>) -> f64) -> Self {
-        LeafNode { value }
+        UnaryNode { value }
     }
 }
-impl<C> Node<C> for LeafNode<C> {
+impl<C> Node<C> for UnaryNode<C> {
     fn evaluate(&self, context: Option<&C>) -> f64 {
         (self.value)(context)
     }
+}
+impl ValueNode {
+    fn new(value: f64) -> Self {
+        ValueNode { value }
+    }
+}
+pub struct ValueNode {
+    pub value: f64,
+}
+impl<C> Node<C> for ValueNode {
+    fn evaluate(&self, _context: Option<&C>) -> f64 {
+        self.value
+    }
+}
+pub struct RandomNode {
+    pub value: f64,
+}
+impl RandomNode {
+    fn new() -> Self {
+        RandomNode {
+            value: rand::random(),
+        }
+    }
+}
+impl<C> Node<C> for RandomNode {
+    fn evaluate(&self, _context: Option<&C>) -> f64 {
+        self.value
+    }
+}
+pub enum LeafNodes<C> {
+    Unary(UnaryNode<C>),
+    Value(ValueNode),
+    Random(RandomNode),
 }
 
 // TODO: How can I modify this code to make random nodes. These are nodes

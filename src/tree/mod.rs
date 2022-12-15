@@ -17,7 +17,7 @@ impl TreeGenotype {
         }
     }
 }
-impl Genotype for TreeGenotype {
+impl<C> Genotype<C> for TreeGenotype {
     fn fitness(&self) -> f64 {
         self.fitness
     }
@@ -28,6 +28,9 @@ impl Genotype for TreeGenotype {
     fn crossover(&self, other: &Self) -> Self {
         todo!()
     }
+    fn evaluate(&self, context: Option<&C>) -> f64 {
+        todo!()
+    }
 }
 pub struct Tree {}
 impl Tree {
@@ -36,17 +39,17 @@ impl Tree {
     }
 }
 impl Tree {}
-pub trait Node {
-    fn evaluate(&self) -> f64;
+pub trait Node<C> {
+    fn evaluate(&self, context: Option<&C>) -> f64;
 }
 
-pub struct InternalNode {
-    pub op: fn(f64, f64) -> f64,
-    pub left: Option<Box<dyn Node>>,
-    pub right: Option<Box<dyn Node>>,
+pub struct InternalNode<C> {
+    pub op: fn(context: Option<&C>, f64, f64) -> f64,
+    pub left: Option<Box<dyn Node<C>>>,
+    pub right: Option<Box<dyn Node<C>>>,
 }
-impl InternalNode {
-    fn new(op: fn(f64, f64) -> f64) -> Self {
+impl<C> InternalNode<C> {
+    fn new(op: fn(context: Option<&C>, f64, f64) -> f64) -> Self {
         InternalNode {
             op,
             left: None,
@@ -54,15 +57,31 @@ impl InternalNode {
         }
     }
 }
-
-impl Node for InternalNode {
-    fn evaluate(&self) -> f64 {
+impl<C> Node<C> for InternalNode<C> {
+    fn evaluate(&self, context: Option<&C>) -> f64 {
         (self.op)(
-            self.left.as_ref().unwrap().evaluate(),
-            self.right.as_ref().unwrap().evaluate(),
+            context,
+            self.left.as_ref().unwrap().evaluate(context),
+            self.right.as_ref().unwrap().evaluate(context),
         )
     }
 }
+pub struct LeafNode<C> {
+    pub value: fn(context: Option<&C>) -> f64,
+}
+impl<C> LeafNode<C> {
+    fn new(value: fn(context: Option<&C>) -> f64) -> Self {
+        LeafNode { value }
+    }
+}
+impl<C> Node<C> for LeafNode<C> {
+    fn evaluate(&self, context: Option<&C>) -> f64 {
+        (self.value)(context)
+    }
+}
+
+// TODO: How can I modify this code to make random nodes. These are nodes
+// that create a random value on instantiation that is used for every evaluation
 
 #[cfg(test)]
 mod tests {
